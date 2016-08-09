@@ -56,6 +56,8 @@ class StdOutListener(StreamListener):
         print(status)
 
     def analyse(self,line):
+        #run nltk download first time when code runs to download ntlk files
+        # nltk.download()
         #these are writers for the files having acceration and topics jsons
         file1 = open("acceleration.txt","w")
         file2 =  codecs.open("topics.json",'w',encoding='utf8')
