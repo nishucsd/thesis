@@ -10,10 +10,10 @@ import ujson
 import time
 import codecs
 import re
-import sqlite3
+# import sqlite3
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from nltk.stem import PorterStemmer
+# from nltk.stem import WordNetLemmatizer
+# from nltk.stem import PorterStemmer
 # from clusters2 import topic2
 from clusters4 import topic4
 import random
@@ -33,8 +33,8 @@ class StdOutListener(StreamListener):
         self.regex = re.compile('[%s]' % re.escape('!"$%&\'()*+,-./:;<=>?[\\]^_`{|}‘’~'))
         self.stop_words =set(stopwords.words("english"))
         self.stop_words|=set(["edu","go", "also", "still",'say','says', "anyone", "that" , "thats", "us", "much", "even", "would", "see", "rt", 'is', 'of', "vote","this", "support",'hey','ji'])
-        self.lemmatizer = WordNetLemmatizer()
-        self.st = PorterStemmer()
+        # self.lemmatizer = WordNetLemmatizer()
+        # self.st = PorterStemmer()
         self.count =0
         self.max_topics=15
         self.start_time = time.time()
@@ -56,14 +56,15 @@ class StdOutListener(StreamListener):
         print(status)
 
     def analyse(self,line):
-        file1 = open("acceleration.txt","a")
-        file2 =  codecs.open("topics.json",'a',encoding='utf8')
-        # file2 = open("json.txt","a")
+        #these are writers for the files having acceration and topics jsons
+        file1 = open("acceleration.txt","w")
+        file2 =  codecs.open("topics.json",'w',encoding='utf8')
         f_writer = csv.writer(file1)
 
         parsed_json = self.safe_parse(line)
         if(not parsed_json):
             return
+        # remove punctuations
         tweet = self.regex.sub('', parsed_json["text"].lower())
 
         hashtags = [x["text"].lower() for x in parsed_json['entities']['hashtags']]
@@ -73,6 +74,7 @@ class StdOutListener(StreamListener):
         if(len(words) < 2):
             return
         self.count+=1
+        # calculate similarity with every topic
         for i in range(self.topics.size):
             self.similarity[i] = self.topics[i].get_similarity(hashtags, usernames, words)
         if(np.max(self.similarity) == 0):
@@ -84,6 +86,7 @@ class StdOutListener(StreamListener):
         else:
             max_ind = np.argmax(self.similarity)
 
+        #add the tweet to the topic at max index
         self.topics[max_ind].set_cluster(hashtags, usernames, words)
         if(self.count%1500 ==0):
             current = time.time()
@@ -92,9 +95,12 @@ class StdOutListener(StreamListener):
             self.count=0
             counts_vector = [i.topic_count for i in self.topics]
             counts_vector += [0]*(self.max_topics-len(counts_vector))
+            # calculate velocity and acceleration of each topic
             delta = np.subtract(counts_vector,self.c_old)
             acc = np.subtract(delta,self.v_old)
-            # f_writer.writerow(acc)
+
+            # remove the comment from next line to save acceleration file
+            f_writer.writerow(acc)
             # print(counts_vector)
             # self.ax1.plot(acc)
             self.c_old = counts_vector
@@ -102,7 +108,8 @@ class StdOutListener(StreamListener):
             # plt.grid()
             # self.fig.canvas.draw()
             # self.ax1.clear()
-            # self.json_counts(  self.sr_no,file2, counts_vector, self.topics)
+            # remove the comment from next line to save topics file
+            self.json_counts(  self.sr_no,file2, counts_vector, self.topics)
             self.sr_no+=1
             self.print_counts( counts_vector, self.topics)
             print("\n")
