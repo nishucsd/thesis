@@ -10,14 +10,14 @@ Key Features include:
 
 live-twitter.py gives the topics and accelerations as jsons and csv files respectively. Need to install these libraries to access it.
 
-git install tweepy
+pip install tweepy
 
-git install numpy
+pip install numpy
 
-git install matplotlib.pyplot
+pip install matplotlib.pyplot
 
-git install ujson
+pip install ujson
 
-git install random
+pip install random
 
-git install csv
+pip install csv
