@@ -19,10 +19,7 @@ from clusters4 import topic4
 import random
 import csv
 #Variables that contains the user credentials to access Twitter API
-consumer_key = "SYL3iiFXt7whpdhZIQWE1ngRd"
-consumer_secret = "hmJFd3zelTXh2NnXprtzLY2LDEscOtRxuOT9l5hgMk8vYzy3yx"
-access_token = "4715398634-mddzJIPAj8nPHXNGExcbJvrdBGH9muMeIxz7f6K"
-access_token_secret = "TzrvcQmxAHsLSXr9GcFnZGDv3ywSbQaiuNtsMR168CdhZ"
+
 
 
 #This is a basic listener that just prints received tweets to stdout.
