@@ -5,7 +5,7 @@ import time
 import re
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-from clusters4 import topic4
+from clusters3 import topic4
 import random
 import matplotlib.pyplot as plt
 
@@ -21,7 +21,7 @@ def load_data(filename):
     v_sum =np.zeros(max_topics)
     start_time = time.time()
     s1 = start_time
-    time_slice = 1500
+    time_slice = 3000
     evac_arg =np.empty(0)
     evac_size = 4
     flag =0
@@ -32,11 +32,11 @@ def load_data(filename):
     hash_old = [[('',0)]*600]*max_topics
     hashkeys_old = [['']*600]*max_topics
     similarity = np.zeros(max_topics)
-    plt.ion()
-    fig = plt.figure()
-    ax1 = fig.add_subplot(1,1,1)
+    # plt.ion()
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(1,1,1)
 
-    plt.get_current_fig_manager().window.wm_geometry("+0+0")
+    # plt.get_current_fig_manager().window.wm_geometry("+0+0")
     for line in file:
         parsed_json = safe_parse(line)
         if(not parsed_json):
@@ -53,14 +53,11 @@ def load_data(filename):
                 topics = np.append(topics, topic4(600,400,15000))
                 max_ind = topics.size -1
             else:
-                max_ind = evac_arg[random.randrange(0,evac_arg.size)] if evac_arg.size > 0 else random.randrange(0,topics.size)
-                print(max_ind)
-                # if(flag ==1):
-                #     max_ind = evac_arg[0]
-                #     evac_arg = np.delete(evac_arg,0)
-                #     flag =1 if evac_arg.size > 0  else 0
-                # else:
-                #     max_ind = random.randrange(0,topics.size)
+                if(flag ==1):
+                    max_ind = evac_arg
+                    flag =0
+                else:
+                    max_ind = random.randrange(0,topics.size)
         else:
             max_ind = np.argmax(similarity)
 
@@ -74,33 +71,30 @@ def load_data(filename):
             counts_vector += [0]*(max_topics-len(counts_vector))
             delta = np.subtract(counts_vector,c_old)
             acc = np.subtract(delta,v_old)
-            print(counts_vector)
-
-            ax1.plot(acc)
+            # print(counts_vector)
             c_old = counts_vector
             v_old = delta
             v_sum+=v_old
-            plt.grid()
-            fig.canvas.draw()
-            ax1.clear()
+
+            # ax1.plot(acc)
+            # plt.grid()
+            # fig.canvas.draw()
+            # ax1.clear()
 
             annotate = np.arange(max_topics)
             temp = sorted(zip(counts_vector,topics, annotate), key = lambda x:-x[0])
+            print_counts(temp)
             # print_emerging_hash(temp,hash_old,hashkeys_old)
             hash_old = [i[1].l1.items() for i in temp]
             hashkeys_old = [i[1].l1.keys() for i in temp]
-            print("\n")
         if(count % reset_val == 0):
-            count=0
             flag =1
-            print("velocity sum is",v_sum)
-            evac_arg = np.argsort(v_sum)[:evac_size]
-            print("evacuating topics... ", evac_arg)
+            # print("velocity sum is",v_sum)
+            evac_arg = np.argmin(v_sum)
             v_sum= np.zeros(max_topics)
-            # for i in evac_arg:
-            #     topics[i] = topic4(600,400,15000)
-            #     c_old[i]=0
-            #     v_old[i]=0
+            topics[evac_arg] = topic4(600,400,15000)
+            c_old[evac_arg]=0
+            v_old[evac_arg]=0
 
     print("---\n\n\nfinal time: %s seconds ---" % (time.time() - s1))
 
@@ -122,8 +116,6 @@ def safe_parse(raw_json):
         return {}
 
 def print_counts(temp):
-
-
     for i in temp[:8] :
         print( "Topic: ", i[2])
         print(sorted(i[1].l1.items(), key = lambda x : -x[1])[:50])
@@ -153,6 +145,6 @@ def is_json(myjson):
         return False
     return True
 
-load_data(r"F:\election data\election139\election150")
+load_data(r"F:\election data\election139\election248")
 
 

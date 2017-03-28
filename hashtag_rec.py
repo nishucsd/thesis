@@ -26,7 +26,7 @@ access_token_secret = "TzrvcQmxAHsLSXr9GcFnZGDv3ywSbQaiuNtsMR168CdhZ"
 
 
 #This is a basic listener that just prints received tweets to stdout.
-class StdOutListener(StreamListener):
+class StdOutListener1(StreamListener):
 
     sr_no=1
     def __init__(self):
@@ -120,9 +120,30 @@ class StdOutListener(StreamListener):
             self.sr_no+=1
             self.print_counts( counts_vector, self.topics)
             print("\n")
-            if(self.sr_no %50 ==0):
-                self.clear(self.topics)
-                print("flushed!!!")
+        if(self.sr_no%600==0):
+            self.sr_no+=1
+            for j in range(8):
+                tweet = self.regex.sub('', input("Enter Tweet: ").lower())
+                hashtags = [i for i in tweet.split() if i.startswith('#')]
+                usernames = [i for i in tweet.split() if i.startswith('@')]
+                words = self.getwords(tweet.split())
+
+                if(len(words) < 2):
+                    return
+                self.count+=1
+                # calculate similarity with every topic
+                for i in range(self.topics.size):
+                    self.similarity[i] = self.topics[i].get_similarity(hashtags, usernames, words)
+                if(np.max(self.similarity) == 0):
+                    if(self.topics.size < self.max_topics):
+                        self.topics = np.append(self.topics, topic4(600,400,3500))
+                        max_ind = self.topics.size -1
+                    else:
+                        max_ind = -1
+                else:
+                    max_ind = np.argmax(self.similarity)
+                if (max_ind != -1):
+                    print(sorted(self.topics[max_ind].l1.items(), key = lambda x : -x[1])[:10])
 
 
 
@@ -233,12 +254,12 @@ class StdOutListener(StreamListener):
 
 if __name__ == '__main__':
     #This handles Twitter authetification and the connection to Twitter Streaming API
-    l = StdOutListener()
+    l = StdOutListener1()
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     stream = Stream(auth, l)
 
     #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     # stream.filter(track=['nvdemconvention','democratic convention'])
-    stream.filter(track=['trump' ])
+    stream.filter(track=['trump'])
     # stream.filter(locations=[-75,39,-73,41])

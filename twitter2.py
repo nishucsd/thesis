@@ -5,7 +5,7 @@ import time
 import re
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-from clusters4 import topic4
+from clusters6 import topic4
 import random
 import matplotlib.pyplot as plt
 

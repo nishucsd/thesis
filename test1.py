@@ -6,6 +6,7 @@ import re
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from clusters4 import topic4
+
 import random
 import locale
 
@@ -22,31 +23,41 @@ def load_data(filename):
     file = open(filename)
     f1 = open("F:\election data\election139\split1","a")
 
-
+    counter =1
+    choice = 0
     for line in file:
         parsed_json = safe_parse(line)
         if(not parsed_json):
             continue
         # tweet = regex.sub('', parsed_json["text"].lower())
-        hashtags = [x["text"].lower() for x in parsed_json['entities']['hashtags']]
-        choice =0
-        if "makedonalddrumpfagain" in hashtags:
-            choice =4
-        elif "alwaystrump" in hashtags or "makeamericagreatagain" in hashtags or "trump2016" in hashtags:
-            choice =1
-        elif "berniesanders" in hashtags or "feelthebern" in hashtags or "bernie2016" in hashtags or  "supermonday" in hashtags:
-            choice =2
-        elif "hillary" in hashtags or "imwithher" in hashtags or "hillaryclinton" in hashtags or "supertuesday" in hashtags:
-            choice =3
-        elif "cruzcrew" in hashtags or "choosecruz" in hashtags or "tedcruz" in hashtags:
-            choice =0
-        print("sfsf")
+        # hashtags = [x["text"].lower() for x in parsed_json['entities']['hashtags']]
+        # rand = random.randrange(0,5)
+        # if rand == 0:
+        #     choice =4
+        # elif rand == 0:
+        #     choice =1
+        # elif "berniesanders" in hashtags or "feelthebern" in hashtags or "bernie2016" in hashtags or  "supermonday" in hashtags:
+        #     choice =2
+        # elif "hillary" in hashtags or "imwithher" in hashtags or "hillaryclinton" in hashtags or "supertuesday" in hashtags:
+        #     choice =3
+        # elif "cruzcrew" in hashtags or "choosecruz" in hashtags or "tedcruz" in hashtags:
+        #     choice =0
+        # print("sfsf")
         # else :
-        #     choice = int(random.random()*5)
 
-        path = "C:\\291d\\t6\\" + str(choice)
+        #     choice = int(random.random()*5)
+        if(counter%20000 == 0):
+            counter =0
+            choice+=1
+        counter+=1
+
+        print(counter,"  ",choice)
+
+
+        path = "C:\\thesis\\splits2\\" + str(choice)
         f2 = open(path,"a")
         f2.write(line)
+    f2.close()
 
 
 

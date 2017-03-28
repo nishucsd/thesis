@@ -38,7 +38,7 @@ class StdOutListener(StreamListener):
         self.count =0
         self.max_topics=15
         self.start_time = time.time()
-        self.topics = np.array([topic4(600,400,3500)])
+        self.topics = np.array([topic4(600,400,15000)])
         self.similarity = np.zeros(self.max_topics)
         self.c_old = [0]*self.max_topics
         self.v_old = [0]*self.max_topics
@@ -60,7 +60,7 @@ class StdOutListener(StreamListener):
         # nltk.download()
         #these are writers for the files having acceration and topics jsons
         file1 = open("acceleration.txt","a")
-        file2 =  codecs.open("topicst1.json",'a',encoding='utf8')
+        file2 =  codecs.open("topics89.json",'a',encoding='utf8')
         f_writer = csv.writer(file1)
 
         parsed_json = self.safe_parse(line)
@@ -81,7 +81,7 @@ class StdOutListener(StreamListener):
             self.similarity[i] = self.topics[i].get_similarity(hashtags, usernames, words)
         if(np.max(self.similarity) == 0):
             if(self.topics.size < self.max_topics):
-                self.topics = np.append(self.topics, topic4(600,400,3500))
+                self.topics = np.append(self.topics, topic4(600,400,15000))
                 max_ind = self.topics.size -1
                 self.topics[max_ind].first = parsed_json["created_at"]
             else:
@@ -92,7 +92,7 @@ class StdOutListener(StreamListener):
         #add the tweet to the topic at max index
         self.topics[max_ind].set_cluster(hashtags, usernames, words, links, parsed_json["coordinates"])
         self.topics[max_ind].last = parsed_json["created_at"]
-        if(self.count%2000 ==0):
+        if(self.count%1500 ==0):
             current = time.time()
             print("--- %s seconds ---" % (current - self.start_time))
             self.start_time=current
@@ -105,9 +105,7 @@ class StdOutListener(StreamListener):
 
             # remove the comment from next line to save acceleration file
             # f_writer.writerow(acc)
-            print("size of topics : ",counts_vector)
-            print("velocity of topics : ",delta)
-            print("acc of topics : ",acc)
+            # print(counts_vector)
             # self.ax1.plot(acc)
             self.c_old = counts_vector
             self.v_old = delta
@@ -115,14 +113,34 @@ class StdOutListener(StreamListener):
             # self.fig.canvas.draw()
             # self.ax1.clear()
             # remove the comment from next line to save topics file
-            # if(self.sr_no ==9):
-            #     self.json_counts(  self.sr_no,file2, counts_vector, self.topics)
+            # self.json_counts(  self.sr_no,file2, counts_vector, self.topics)
             self.sr_no+=1
             self.print_counts( counts_vector, self.topics)
             print("\n")
-            if(self.sr_no %50 ==0):
-                self.clear(self.topics)
-                print("flushed!!!")
+        if(self.sr_no%600==0):
+            self.sr_no+=1
+            for j in range(8):
+                tweet = self.regex.sub('', input("Enter Tweet: ").lower())
+                hashtags = [i for i in tweet.split() if i.startswith('#')]
+                usernames = [i for i in tweet.split() if i.startswith('@')]
+                words = self.getwords(tweet.split())
+
+                if(len(words) < 2):
+                    return
+                self.count+=1
+                # calculate similarity with every topic
+                for i in range(self.topics.size):
+                    self.similarity[i] = self.topics[i].get_similarity(hashtags, usernames, words)
+                if(np.max(self.similarity) == 0):
+                    if(self.topics.size < self.max_topics):
+                        self.topics = np.append(self.topics, topic4(600,400,15000))
+                        max_ind = self.topics.size -1
+                    else:
+                        max_ind = -1
+                else:
+                    max_ind = np.argmax(self.similarity)
+                if (max_ind != -1):
+                    print(sorted(self.topics[max_ind].l1.items(), key = lambda x : -x[1])[:10])
 
 
 
@@ -155,19 +173,6 @@ class StdOutListener(StreamListener):
             print(i[1].longs)
             print()
 
-    def print_counts2(self,c_vector, topics):
-        annotate = np.arange(self.max_topics)
-        temp = sorted(zip(c_vector,topics, annotate), key = lambda x:-x[0])
-        for i in temp[:10] :
-            print( "Topic: ", i[2], "", (i[1].first,i[1].last))
-            print(i[1].l1.items()[:20])
-            print(i[1].l2.items()[:20])
-            print(sorted(i[1].l3.items(), key = lambda x : -x[1])[:20])
-            print(sorted(i[1].l4.items(), key = lambda x : -x[1])[:3])
-            print(i[1].lats)
-            print(i[1].longs)
-            print()
-
     def write_counts(self,writer, c_vector, topics):
         annotate = np.arange(self.max_topics)
         writer.write("Time stamp is- "+str(time.time())+"\n")
@@ -180,22 +185,6 @@ class StdOutListener(StreamListener):
             writer.write("\n")
 
     def json_counts(self,sr_no, writer, c_vector, topics):
-        out={}
-        out["SrNo."]=sr_no
-        out["created_at"] = time.asctime( time.localtime(time.time()) )
-        out["Top_Topics"]={}
-        annotate = np.arange(self.max_topics)
-        temp = sorted(zip(c_vector,topics, annotate), key = lambda x:-x[0])
-        for i in temp[:7] :
-            out["Top_Topics"]["Topic_"+ str(i[2])]={}
-            out["Top_Topics"]["Topic_"+ str(i[2])]["hashtags"]= sorted(i[1].l1.items(), key = lambda x : -x[1])[:20]
-            out["Top_Topics"]["Topic_"+ str(i[2])]["user_mentions"]= sorted(i[1].l2.items(), key = lambda x : -x[1])[:20]
-            out["Top_Topics"]["Topic_"+ str(i[2])]["tokens"]= sorted(i[1].l3.items(), key = lambda x : -x[1])[:20]
-        json.dump([out], writer)
-        writer.write('\n')
-
-
-    def json_counts2(self,sr_no, writer, c_vector, topics):
         out={}
         out["SrNo."]=sr_no
         out["created_at"] = time.asctime( time.localtime(time.time()) )
@@ -222,11 +211,6 @@ class StdOutListener(StreamListener):
             return False
         return True
 
-    def clear(self, topics):
-        for i in topics:
-            i.flush()
-
-
 
 
 
@@ -240,5 +224,5 @@ if __name__ == '__main__':
 
     #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     # stream.filter(track=['nvdemconvention','democratic convention'])
-    stream.filter(track=['trump' ])
+    stream.filter(track=['trump','hillary','bernie','modi','terrorism','michigan'])
     # stream.filter(locations=[-75,39,-73,41])
