@@ -16,6 +16,8 @@ live-twitter.py gives the topics and accelerations as jsons and csv files respec
 
 pip install tweepy
 
+pip install lru-dict
+
 pip install numpy
 
 pip install matplotlib.pyplot
